@@ -10,20 +10,21 @@
         th { background-color: #f4f4f4; }
     </style>
 
-<!-- Yandex.Metrika counter -->
-<script type="text/javascript">
-    (function(m,e,t,r,i,k,a){
-        m[i]=m[i]||function(){(m[i].a=m[i].a||[]).push(arguments)};
-        m[i].l=1*new Date();
-        for (var j = 0; j < document.scripts.length; j++) {if (document.scripts[j].src === r) { return; }}
-        k=e.createElement(t),a=e.getElementsByTagName(t)[0],k.async=1,k.src=r,a.parentNode.insertBefore(k,a)
-    })(window, document,'script','https://mc.yandex.ru/metrika/tag.js?id=110303584', 'ym');
+    <!-- Подключаем VK Bridge (обязательно для мини-приложений) -->
+    <script src="https://vk.com/js/api/xd_connection.js?2"></script>
 
-    ym(110303584, 'init', {ssr:true, webvisor:true, clickmap:true, ecommerce:"dataLayer", referrer: document.referrer, url: location.href, accurateTrackBounce:true, trackLinks:true});
-</script>
-<noscript><div><img src="https://mc.yandex.ru/watch/110303584" style="position:absolute; left:-9999px;" alt="" /></div></noscript>
-<!-- /Yandex.Metrika counter -->
+    <!-- Яндекс.Метрика (ваш существующий код) -->
+    <script type="text/javascript">
+        (function(m,e,t,r,i,k,a){
+            m[i]=m[i]||function(){(m[i].a=m[i].a||[]).push(arguments)};
+            m[i].l=1*new Date();
+            for (var j = 0; j < document.scripts.length; j++) {if (document.scripts[j].src === r) { return; }}
+            k=e.createElement(t),a=e.getElementsByTagName(t)[0],k.async=1,k.src=r,a.parentNode.insertBefore(k,a)
+        })(window, document,'script','https://mc.yandex.ru/metrika/tag.js?id=110303584', 'ym');
 
+        ym(110303584, 'init', {ssr:true, webvisor:true, clickmap:true, ecommerce:"dataLayer", referrer: document.referrer, url: location.href, accurateTrackBounce:true, trackLinks:true});
+    </script>
+    <noscript><div><img src="https://mc.yandex.ru/watch/110303584" style="position:absolute; left:-9999px;" alt="" /></div></noscript>
 </head>
 <body>
     <h1>Статистика сайта</h1>
@@ -36,13 +37,13 @@
         // -------------------------------------
 
         // Формируем URL для запроса к API. 
-        // presets=sources_summary - запрашиваем сводку по источникам трафика[reference:14]
+        // presets=sources_summary - запрашиваем сводку по источникам трафика
         const apiUrl = `https://api-metrika.yandex.net/stat/v1/data?preset=sources_summary&id=${COUNTER_ID}`;
 
         // Выполняем запрос к API
         fetch(apiUrl, {
             headers: {
-                // Передаём токен в заголовке Authorization[reference:15]
+                // Передаём токен в заголовке Authorization
                 "Authorization": `OAuth ${OAUTH_TOKEN}`
             }
         })
@@ -97,6 +98,24 @@
             tableHtml += '</tbody></table>';
             container.innerHTML = tableHtml;
         }
+    </script>
+
+    <!-- Инициализация VK Mini App -->
+    <script>
+        (function() {
+            // Проверяем, доступен ли VK Bridge
+            if (typeof vkBridge !== 'undefined') {
+                vkBridge.send('VKWebAppInit', {})
+                    .then(() => {
+                        console.log('✅ VK Mini App инициализирован');
+                    })
+                    .catch((error) => {
+                        console.error('❌ Ошибка инициализации VK Bridge:', error);
+                    });
+            } else {
+                console.warn('⚠️ VK Bridge не загружен – приложение запущено вне VK');
+            }
+        })();
     </script>
 </body>
 </html>
