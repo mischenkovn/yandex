@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <title>Моя статистика Яндекс.Метрики</title>
+    <style>
+        body { font-family: sans-serif; margin: 20px; }
+        table { border-collapse: collapse; }
+        td, th { border: 1px solid #ccc; padding: 8px; text-align: left; }
+        th { background-color: #f4f4f4; }
+    </style>
+</head>
+<body>
+    <h1>Статистика сайта</h1>
+    <div id="stats">Загрузка...</div>
+
+    <script>
+        // --- НАСТРОЙКИ (замените на свои!) ---
+        const OAUTH_TOKEN = 'ваш_oauth_токен'; // Токен, полученный на шаге 1
+        const COUNTER_ID = '12345678'; // ID вашего счётчика Метрики
+        // -------------------------------------
+
+        // Формируем URL для запроса к API. 
+        // presets=sources_summary - запрашиваем сводку по источникам трафика[reference:14]
+        const apiUrl = `https://api-metrika.yandex.net/stat/v1/data?preset=sources_summary&id=${COUNTER_ID}`;
+
+        // Выполняем запрос к API
+        fetch(apiUrl, {
+            headers: {
+                // Передаём токен в заголовке Authorization[reference:15]
+                "Authorization": `OAuth ${OAUTH_TOKEN}`
+            }
+        })
+        .then(response => {
+            if (!response.ok) {
+                throw new Error(`Ошибка HTTP: ${response.status}`);
+            }
+            return response.json();
+        })
+        .then(data => {
+            // Обрабатываем полученные данные
+            renderStats(data);
+        })
+        .catch(error => {
+            console.error('Ошибка при запросе к API:', error);
+            document.getElementById('stats').innerHTML = `<p style="color: red;">Ошибка загрузки данных: ${error.message}</p>`;
+        });
+
+        // Функция для отображения данных
+        function renderStats(data) {
+            const container = document.getElementById('stats');
+            
+            // Проверяем, есть ли данные
+            if (!data.data || data.data.length === 0) {
+                container.innerHTML = '<p>Нет данных для отображения.</p>';
+                return;
+            }
+
+            // Строим простую таблицу
+            let tableHtml = '<table><thead><tr>';
+            // Заголовки из запроса
+            data.query.dimensions.forEach(dim => {
+                tableHtml += `<th>${dim.name}</th>`;
+            });
+            data.query.metrics.forEach(metric => {
+                tableHtml += `<th>${metric.name}</th>`;
+            });
+            tableHtml += '</tr></thead><tbody>';
+
+            // Строки с данными
+            data.data.forEach(row => {
+                tableHtml += '<tr>';
+                row.dimensions.forEach(dim => {
+                    tableHtml += `<td>${dim.name}</td>`;
+                });
+                row.metrics.forEach(metric => {
+                    tableHtml += `<td>${metric}</td>`;
+                });
+                tableHtml += '</tr>';
+            });
+
+            tableHtml += '</tbody></table>';
+            container.innerHTML = tableHtml;
+        }
+    </script>
+</body>
+</html>
